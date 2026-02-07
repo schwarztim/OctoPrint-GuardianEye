@@ -1,0 +1,311 @@
+<div id="settings_plugin_guardianeye">
+    <!-- General -->
+    <div class="guardianeye-settings-section">
+        <h4>General</h4>
+        <div class="control-group">
+            <label class="checkbox">
+                <input type="checkbox" data-bind="checked: settings.settings.plugins.guardianeye.enabled" />
+                Enable GuardianEye
+            </label>
+        </div>
+        <div class="control-group">
+            <label class="checkbox">
+                <input type="checkbox" data-bind="checked: settings.settings.plugins.guardianeye.auto_start" />
+                Auto-start monitoring when print begins
+            </label>
+        </div>
+    </div>
+
+    <!-- AI Provider -->
+    <div class="guardianeye-settings-section">
+        <h4>AI Vision Provider</h4>
+        <div class="control-group">
+            <label class="control-label">Provider</label>
+            <div class="controls">
+                <select data-bind="value: settings.settings.plugins.guardianeye.provider" class="input-block-level">
+                    <option value="openai">OpenAI (gpt-4o-mini)</option>
+                    <option value="azure_openai">Azure OpenAI</option>
+                    <option value="anthropic">Anthropic (Claude)</option>
+                    <option value="xai">xAI / Grok</option>
+                    <option value="gemini">Google Gemini</option>
+                    <option value="ollama">Ollama (Local / Free)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- API Key (hidden for Ollama) -->
+        <div class="control-group" data-bind="visible: showApiKey">
+            <label class="control-label">API Key</label>
+            <div class="controls">
+                <input type="password" class="input-block-level"
+                       data-bind="value: settings.settings.plugins.guardianeye.api_key"
+                       placeholder="Enter API key..." />
+            </div>
+        </div>
+
+        <!-- OpenAI Model -->
+        <div class="control-group" data-bind="visible: isProviderOpenAI">
+            <label class="control-label">Model</label>
+            <div class="controls">
+                <select data-bind="value: settings.settings.plugins.guardianeye.openai_model" class="input-block-level">
+                    <option value="gpt-4o-mini">gpt-4o-mini (Cheapest)</option>
+                    <option value="gpt-4o">gpt-4o</option>
+                    <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+                    <option value="gpt-4.1">gpt-4.1</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Azure OpenAI -->
+        <div data-bind="visible: isProviderAzure">
+            <div class="control-group">
+                <label class="control-label">Azure Endpoint</label>
+                <div class="controls">
+                    <input type="text" class="input-block-level"
+                           data-bind="value: settings.settings.plugins.guardianeye.azure_endpoint"
+                           placeholder="https://your-resource.openai.azure.com" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Deployment Name</label>
+                <div class="controls">
+                    <input type="text" class="input-block-level"
+                           data-bind="value: settings.settings.plugins.guardianeye.azure_deployment"
+                           placeholder="gpt-4o-mini" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">API Version</label>
+                <div class="controls">
+                    <input type="text" class="input-block-level"
+                           data-bind="value: settings.settings.plugins.guardianeye.azure_api_version"
+                           placeholder="2025-01-01-preview" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Anthropic Model -->
+        <div class="control-group" data-bind="visible: isProviderAnthropic">
+            <label class="control-label">Model</label>
+            <div class="controls">
+                <select data-bind="value: settings.settings.plugins.guardianeye.anthropic_model" class="input-block-level">
+                    <option value="claude-sonnet-4-20250514">claude-sonnet-4-20250514</option>
+                    <option value="claude-haiku-4-5-20251001">claude-haiku-4-5-20251001 (Cheaper)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- xAI Model -->
+        <div class="control-group" data-bind="visible: isProviderXAI">
+            <label class="control-label">Model</label>
+            <div class="controls">
+                <input type="text" class="input-block-level"
+                       data-bind="value: settings.settings.plugins.guardianeye.xai_model"
+                       placeholder="grok-2-vision-latest" />
+            </div>
+        </div>
+
+        <!-- Gemini Model -->
+        <div class="control-group" data-bind="visible: isProviderGemini">
+            <label class="control-label">Model</label>
+            <div class="controls">
+                <select data-bind="value: settings.settings.plugins.guardianeye.gemini_model" class="input-block-level">
+                    <option value="gemini-2.0-flash">gemini-2.0-flash (Cheapest)</option>
+                    <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                    <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Ollama -->
+        <div data-bind="visible: isProviderOllama">
+            <div class="control-group">
+                <label class="control-label">Ollama Endpoint</label>
+                <div class="controls">
+                    <input type="text" class="input-block-level"
+                           data-bind="value: settings.settings.plugins.guardianeye.ollama_endpoint"
+                           placeholder="http://localhost:11434" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Model</label>
+                <div class="controls">
+                    <input type="text" class="input-block-level"
+                           data-bind="value: settings.settings.plugins.guardianeye.ollama_model"
+                           placeholder="llava" />
+                    <span class="help-block">Ensure the model is pulled: <code>ollama pull llava</code></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Connection -->
+        <div class="control-group">
+            <div class="controls">
+                <button class="btn" data-bind="click: testConnection, disable: testRunning">
+                    <i class="fa fa-plug"></i>
+                    <span data-bind="visible: !testRunning()">Test Connection</span>
+                    <span data-bind="visible: testRunning">Testing...</span>
+                </button>
+                <div class="guardianeye-test-result"
+                     data-bind="visible: testResult(), css: testSuccess() ? 'guardianeye-test-success' : 'guardianeye-test-failure'">
+                    <span data-bind="text: testResult"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monitoring -->
+    <div class="guardianeye-settings-section">
+        <h4>Monitoring</h4>
+        <div class="control-group">
+            <label class="control-label">Check Interval (seconds)</label>
+            <div class="controls">
+                <input type="number" min="10" max="600"
+                       data-bind="value: settings.settings.plugins.guardianeye.interval_seconds" />
+                <span class="help-block">How often to capture and analyze a snapshot (min 10s)</span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">Min Layer for Vision</label>
+            <div class="controls">
+                <input type="number" min="0" max="20"
+                       data-bind="value: settings.settings.plugins.guardianeye.min_layer_for_vision" />
+                <span class="help-block">Skip AI analysis before this layer (first layers are too sparse)</span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">Failure Strikes</label>
+            <div class="controls">
+                <input type="number" min="1" max="10"
+                       data-bind="value: settings.settings.plugins.guardianeye.fail_strikes" />
+                <span class="help-block">Consecutive FAIL verdicts needed to stop the print</span>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">Layer Height (mm)</label>
+            <div class="controls">
+                <input type="number" step="0.01" min="0.04" max="1.0"
+                       data-bind="value: settings.settings.plugins.guardianeye.layer_height" />
+                <span class="help-block">Used to estimate layer number from Z height</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Snapshot -->
+    <div class="guardianeye-settings-section">
+        <h4>Snapshot</h4>
+        <div class="control-group">
+            <label class="control-label">Snapshot URL Override</label>
+            <div class="controls">
+                <input type="text" class="input-block-level"
+                       data-bind="value: settings.settings.plugins.guardianeye.snapshot_url"
+                       placeholder="Leave empty to auto-detect from OctoPrint settings" />
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">Snapshot Retention</label>
+            <div class="controls">
+                <input type="number" min="10" max="1000"
+                       data-bind="value: settings.settings.plugins.guardianeye.snapshot_retention" />
+                <span class="help-block">Max snapshots to keep on disk</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Prompt -->
+    <div class="guardianeye-settings-section">
+        <h4>Custom Prompt</h4>
+        <div class="control-group">
+            <div class="controls">
+                <textarea class="guardianeye-prompt-textarea"
+                          data-bind="value: settings.settings.plugins.guardianeye.custom_prompt"
+                          placeholder="Leave empty to use the default prompt. Use {stage_context} placeholder for stage-specific instructions."></textarea>
+                <span class="help-block">Override the AI vision prompt. Leave empty for the battle-tested default.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="guardianeye-settings-section">
+        <h4>Notifications</h4>
+        <div class="control-group">
+            <label class="checkbox">
+                <input type="checkbox" data-bind="checked: settings.settings.plugins.guardianeye.notifications.octoprint_popup" />
+                OctoPrint popup notification
+            </label>
+        </div>
+
+        <!-- Webhook -->
+        <div class="control-group">
+            <label class="checkbox">
+                <input type="checkbox" data-bind="checked: settings.settings.plugins.guardianeye.notifications.webhook_enabled" />
+                Webhook (Home Assistant, IFTTT, etc.)
+            </label>
+        </div>
+        <div data-bind="visible: settings.settings.plugins.guardianeye.notifications.webhook_enabled">
+            <div class="control-group">
+                <label class="control-label">Webhook URL</label>
+                <div class="controls">
+                    <input type="text" class="input-block-level"
+                           data-bind="value: settings.settings.plugins.guardianeye.notifications.webhook_url"
+                           placeholder="https://..." />
+                </div>
+            </div>
+        </div>
+
+        <!-- Discord -->
+        <div class="control-group">
+            <label class="checkbox">
+                <input type="checkbox" data-bind="checked: settings.settings.plugins.guardianeye.notifications.discord_enabled" />
+                Discord
+            </label>
+        </div>
+        <div data-bind="visible: settings.settings.plugins.guardianeye.notifications.discord_enabled">
+            <div class="control-group">
+                <label class="control-label">Discord Webhook URL</label>
+                <div class="controls">
+                    <input type="text" class="input-block-level"
+                           data-bind="value: settings.settings.plugins.guardianeye.notifications.discord_webhook_url"
+                           placeholder="https://discord.com/api/webhooks/..." />
+                </div>
+            </div>
+        </div>
+
+        <!-- Telegram -->
+        <div class="control-group">
+            <label class="checkbox">
+                <input type="checkbox" data-bind="checked: settings.settings.plugins.guardianeye.notifications.telegram_enabled" />
+                Telegram
+            </label>
+        </div>
+        <div data-bind="visible: settings.settings.plugins.guardianeye.notifications.telegram_enabled">
+            <div class="control-group">
+                <label class="control-label">Bot Token</label>
+                <div class="controls">
+                    <input type="password" class="input-block-level"
+                           data-bind="value: settings.settings.plugins.guardianeye.notifications.telegram_bot_token"
+                           placeholder="123456:ABC-..." />
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Chat ID</label>
+                <div class="controls">
+                    <input type="text" class="input-block-level"
+                           data-bind="value: settings.settings.plugins.guardianeye.notifications.telegram_chat_id"
+                           placeholder="12345678" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced -->
+    <div class="guardianeye-settings-section">
+        <h4>Advanced</h4>
+        <div class="control-group">
+            <label class="checkbox">
+                <input type="checkbox" data-bind="checked: settings.settings.plugins.guardianeye.cost_tracking" />
+                Track API costs
+            </label>
+        </div>
+    </div>
+</div>

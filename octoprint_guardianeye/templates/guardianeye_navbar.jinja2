@@ -1,0 +1,33 @@
+<a href="#" class="dropdown-toggle" data-toggle="dropdown" data-bind="css: navbarIconClass">
+    <span class="guardianeye-navbar-icon"><i class="fa fa-eye"></i></span>
+</a>
+<ul class="dropdown-menu" id="navbar_plugin_guardianeye">
+    <li>
+        <a href="#" data-bind="click: function() { return false; }" style="cursor: default;">
+            <span data-bind="text: statusText, css: statusClass" class="guardianeye-status" style="font-size: 11px;"></span>
+            <!-- ko if: monitorActive -->
+            <span style="font-size: 11px; color: #888; margin-left: 6px;">
+                Cycle <span data-bind="text: cycleCount"></span>
+            </span>
+            <!-- /ko -->
+        </a>
+    </li>
+    <!-- ko if: lastVerdictReason() -->
+    <li class="divider"></li>
+    <li>
+        <a href="#" data-bind="click: function() { return false; }" style="cursor: default; font-size: 11px;">
+            <span data-bind="text: lastVerdictFailed() ? 'FAIL' : 'OK',
+                             css: lastVerdictFailed() ? 'guardianeye-verdict-fail' : 'guardianeye-verdict-ok'"></span>:
+            <span data-bind="text: lastVerdictReason().substring(0, 50)" style="color: #666;"></span>
+        </a>
+    </li>
+    <!-- /ko -->
+    <!-- ko if: failureDetected -->
+    <li class="divider"></li>
+    <li>
+        <a href="#" style="color: #c62828; cursor: default;" data-bind="click: function() { return false; }">
+            <i class="fa fa-exclamation-triangle"></i> Print stopped!
+        </a>
+    </li>
+    <!-- /ko -->
+</ul>

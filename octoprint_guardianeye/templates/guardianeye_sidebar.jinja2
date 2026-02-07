@@ -1,0 +1,74 @@
+<div id="sidebar_plugin_guardianeye">
+    <!-- Status -->
+    <div class="guardianeye-sidebar-row">
+        <span class="label-key">Status</span>
+        <span class="guardianeye-status" data-bind="text: statusText, css: statusClass"></span>
+    </div>
+
+    <!-- Strike Counter -->
+    <div class="guardianeye-sidebar-row">
+        <span class="label-key">Strikes</span>
+        <span class="guardianeye-strikes" data-bind="foreach: strikeDisplay">
+            <span class="guardianeye-strike" data-bind="css: $data"></span>
+        </span>
+    </div>
+
+    <!-- Layer / Progress -->
+    <div class="guardianeye-sidebar-row">
+        <span class="label-key">Layer</span>
+        <span class="label-value">
+            <span data-bind="text: layer() !== null ? layer() : '--'"></span>/<span data-bind="text: totalLayers() !== null ? totalLayers() : '--'"></span>
+        </span>
+    </div>
+    <div class="guardianeye-sidebar-row">
+        <span class="label-key">Progress</span>
+        <span class="label-value"><span data-bind="text: progress"></span>%</span>
+    </div>
+
+    <!-- Cycle count -->
+    <div class="guardianeye-sidebar-row">
+        <span class="label-key">Cycles</span>
+        <span class="label-value" data-bind="text: cycleCount"></span>
+    </div>
+
+    <!-- Last Verdict -->
+    <div class="guardianeye-sidebar-row" data-bind="visible: lastVerdictReason()">
+        <span class="label-key">Verdict</span>
+        <span data-bind="text: lastVerdictFailed() ? 'FAIL' : 'OK',
+                         css: lastVerdictFailed() ? 'guardianeye-verdict-fail' : 'guardianeye-verdict-ok'"></span>
+    </div>
+    <div data-bind="visible: lastVerdictReason()" style="font-size: 11px; color: #666; padding: 2px 0;">
+        <span data-bind="text: lastVerdictReason"></span>
+        <span style="color: #aaa;"> (<span data-bind="text: lastVerdictLatency"></span>ms)</span>
+    </div>
+
+    <!-- Snapshot Thumbnail -->
+    <div data-bind="visible: snapshotUrl()">
+        <img class="guardianeye-snapshot-thumb" data-bind="attr: { src: snapshotUrl }" alt="Last snapshot" />
+    </div>
+
+    <!-- Session Cost -->
+    <div class="guardianeye-sidebar-row">
+        <span class="label-key">Session Cost</span>
+        <span class="label-value" data-bind="text: formattedSessionCost"></span>
+    </div>
+
+    <!-- Failure Alert -->
+    <div data-bind="visible: failureDetected" style="background: #ffebee; border-radius: 4px; padding: 8px; margin-top: 6px;">
+        <strong style="color: #c62828;">Print Stopped!</strong>
+        <div style="font-size: 11px; color: #666;" data-bind="text: failureReason"></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="guardianeye-sidebar-actions">
+        <button class="btn btn-small btn-primary" data-bind="click: manualCheck, visible: monitorActive">
+            <i class="fa fa-refresh"></i> Check Now
+        </button>
+        <button class="btn btn-small btn-success" data-bind="click: startMonitoring, visible: !monitorActive()">
+            <i class="fa fa-play"></i> Start
+        </button>
+        <button class="btn btn-small btn-danger" data-bind="click: stopMonitoring, visible: monitorActive">
+            <i class="fa fa-stop"></i> Stop
+        </button>
+    </div>
+</div>

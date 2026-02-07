@@ -1,0 +1,88 @@
+<div id="tab_plugin_guardianeye">
+    <!-- Stats Cards -->
+    <div class="guardianeye-stats-grid">
+        <div class="guardianeye-stat-card">
+            <div class="guardianeye-stat-value" data-bind="text: statistics().total || 0"></div>
+            <div class="guardianeye-stat-label">Total Checks</div>
+        </div>
+        <div class="guardianeye-stat-card">
+            <div class="guardianeye-stat-value" data-bind="text: printScore"></div>
+            <div class="guardianeye-stat-label">Print Score</div>
+        </div>
+        <div class="guardianeye-stat-card">
+            <div class="guardianeye-stat-value" data-bind="text: (statistics().fp_rate || 0) + '%'"></div>
+            <div class="guardianeye-stat-label">False Positive Rate</div>
+        </div>
+        <div class="guardianeye-stat-card">
+            <div class="guardianeye-stat-value" data-bind="text: '$' + (statistics().total_cost || 0).toFixed(4)"></div>
+            <div class="guardianeye-stat-label">Total Cost</div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="margin-bottom: 12px;">
+        <button class="btn btn-small" data-bind="click: loadHistory">
+            <i class="fa fa-refresh"></i> Refresh
+        </button>
+        <button class="btn btn-small btn-danger" data-bind="click: clearHistory">
+            <i class="fa fa-trash"></i> Clear History
+        </button>
+    </div>
+
+    <!-- Verdict History Table -->
+    <table class="guardianeye-history-table">
+        <thead>
+            <tr>
+                <th>Snapshot</th>
+                <th>Verdict</th>
+                <th>Reason</th>
+                <th>Confidence</th>
+                <th>Layer</th>
+                <th>Latency</th>
+                <th>Provider</th>
+                <th>Cost</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: historyEntries">
+            <tr>
+                <td>
+                    <!-- ko if: $data.snapshot -->
+                    <img class="guardianeye-history-thumb"
+                         data-bind="attr: { src: BASEURL + 'plugin/guardianeye/snapshot/' + $data.snapshot }"
+                         alt="snapshot" />
+                    <!-- /ko -->
+                    <!-- ko ifnot: $data.snapshot -->
+                    <span style="color: #ccc;">--</span>
+                    <!-- /ko -->
+                </td>
+                <td>
+                    <span data-bind="text: $data.failed ? 'FAIL' : 'OK',
+                                     css: $data.failed ? 'guardianeye-verdict-fail' : 'guardianeye-verdict-ok'"></span>
+                    <!-- ko if: $data.false_positive -->
+                    <span class="guardianeye-fp-badge">FP</span>
+                    <!-- /ko -->
+                </td>
+                <td data-bind="text: ($data.reason || '').substring(0, 60)"></td>
+                <td data-bind="text: $data.confidence ? ($data.confidence * 100).toFixed(0) + '%' : '--'"></td>
+                <td data-bind="text: $data.layer || '--'"></td>
+                <td data-bind="text: ($data.latency_ms || 0) + 'ms'"></td>
+                <td data-bind="text: ($data.provider || '') + '/' + ($data.model || '')"></td>
+                <td data-bind="text: '$' + ($data.cost || 0).toFixed(4)"></td>
+                <td>
+                    <!-- ko if: $data.failed && !$data.false_positive -->
+                    <button class="btn btn-mini" data-bind="click: $parent.markFalsePositive" title="Mark as False Positive">
+                        <i class="fa fa-flag-o"></i> FP
+                    </button>
+                    <!-- /ko -->
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Empty state -->
+    <div data-bind="visible: historyEntries().length === 0" style="text-align: center; padding: 30px; color: #999;">
+        <i class="fa fa-eye fa-3x" style="opacity: 0.3;"></i>
+        <p style="margin-top: 10px;">No verdict history yet. Start a print to begin monitoring.</p>
+    </div>
+</div>

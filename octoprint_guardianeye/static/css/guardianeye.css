@@ -1,0 +1,243 @@
+/* GuardianEye Plugin Styles */
+
+/* ── Status Indicator ──────────────────────── */
+.guardianeye-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.guardianeye-status-idle {
+  color: #888;
+  background: #f0f0f0;
+}
+
+.guardianeye-status-active {
+  color: #2e7d32;
+  background: #e8f5e9;
+}
+
+.guardianeye-status-failure {
+  color: #c62828;
+  background: #ffebee;
+  animation: guardianeye-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes guardianeye-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* ── Strike Counter ────────────────────────── */
+.guardianeye-strikes {
+  display: inline-flex;
+  gap: 4px;
+  margin: 4px 0;
+}
+
+.guardianeye-strike {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.strike-active {
+  background: #c62828;
+  box-shadow: 0 0 4px rgba(198, 40, 40, 0.5);
+}
+
+.strike-inactive {
+  background: #ccc;
+  border: 1px solid #bbb;
+}
+
+/* ── Sidebar Widget ────────────────────────── */
+#sidebar_plugin_guardianeye .sidebar-content {
+  padding: 8px 0;
+}
+
+.guardianeye-sidebar-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0;
+  font-size: 12px;
+}
+
+.guardianeye-sidebar-row .label-key {
+  color: #888;
+}
+
+.guardianeye-sidebar-row .label-value {
+  font-weight: 500;
+}
+
+.guardianeye-snapshot-thumb {
+  width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+  border-radius: 4px;
+  margin: 6px 0;
+  border: 1px solid #ddd;
+}
+
+.guardianeye-sidebar-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 4px;
+}
+
+.guardianeye-sidebar-actions .btn {
+  flex: 1;
+  font-size: 11px;
+  padding: 4px 8px;
+}
+
+/* ── Verdict reason ────────────────────────── */
+.guardianeye-verdict-ok {
+  color: #2e7d32;
+}
+
+.guardianeye-verdict-fail {
+  color: #c62828;
+  font-weight: 600;
+}
+
+/* ── Settings Panel ────────────────────────── */
+.guardianeye-settings-section {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.guardianeye-settings-section:last-child {
+  border-bottom: none;
+}
+
+.guardianeye-settings-section h4 {
+  margin-bottom: 10px;
+  color: #555;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.guardianeye-test-result {
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.guardianeye-test-success {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.guardianeye-test-failure {
+  background: #ffebee;
+  color: #c62828;
+}
+
+/* ── History Tab ───────────────────────────── */
+.guardianeye-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.guardianeye-stat-card {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 12px;
+  text-align: center;
+}
+
+.guardianeye-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #333;
+}
+
+.guardianeye-stat-label {
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.guardianeye-history-table {
+  width: 100%;
+  font-size: 12px;
+}
+
+.guardianeye-history-table th {
+  background: #f8f9fa;
+  padding: 6px 8px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.guardianeye-history-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: middle;
+}
+
+.guardianeye-history-thumb {
+  width: 50px;
+  height: 38px;
+  object-fit: cover;
+  border-radius: 3px;
+}
+
+.guardianeye-fp-badge {
+  background: #fff3e0;
+  color: #e65100;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+/* ── Navbar Icon ───────────────────────────── */
+.guardianeye-navbar-icon {
+  font-size: 16px;
+}
+
+.guardianeye-navbar-idle .guardianeye-navbar-icon {
+  color: #888;
+}
+
+.guardianeye-navbar-active .guardianeye-navbar-icon {
+  color: #2e7d32;
+}
+
+.guardianeye-navbar-failure .guardianeye-navbar-icon {
+  color: #c62828;
+  animation: guardianeye-pulse 1.5s ease-in-out infinite;
+}
+
+/* ── Custom prompt textarea ────────────────── */
+.guardianeye-prompt-textarea {
+  width: 100%;
+  min-height: 120px;
+  font-family: monospace;
+  font-size: 12px;
+  resize: vertical;
+}
