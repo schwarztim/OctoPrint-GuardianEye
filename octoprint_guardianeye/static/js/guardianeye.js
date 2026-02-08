@@ -170,7 +170,15 @@ $(function () {
       self.testRunning(true);
       self.testResult("");
       self.testSuccess(null);
-      OctoPrint.simpleApiCommand("guardianeye", "test_provider")
+      var s = self.settings.settings.plugins.guardianeye;
+      OctoPrint.simpleApiCommand("guardianeye", "test_provider", {
+        provider: s.provider(),
+        endpoint: s.endpoint(),
+        api_key: s.api_key(),
+        model: s.model(),
+        azure_deployment: s.azure_deployment(),
+        azure_api_version: s.azure_api_version(),
+      })
         .done(function (data) {
           self.testResult(data.message || "Unknown result");
           self.testSuccess(data.success || false);

@@ -139,7 +139,7 @@ class GuardianEyePlugin(
 
     def on_api_command(self, command, data):
         if command == "test_provider":
-            return self._api_test_provider()
+            return self._api_test_provider(data)
         elif command == "manual_check":
             return self._api_manual_check()
         elif command == "start_monitoring":
@@ -162,9 +162,12 @@ class GuardianEyePlugin(
             "cost": self._cost_tracker.to_dict() if hasattr(self, "_cost_tracker") else {},
         })
 
-    def _api_test_provider(self):
+    def _api_test_provider(self, data=None):
         try:
-            provider = self.get_vision_provider(force_new=True)
+            if data and data.get("provider"):
+                provider = create_vision_provider(data)
+            else:
+                provider = self.get_vision_provider(force_new=True)
             success, message = provider.test_connection()
             return flask.jsonify({"success": success, "message": message})
         except Exception as e:
