@@ -178,18 +178,15 @@ class PrintMonitor:
                 cycle_num, os.path.basename(saved_path), progress, layer, total_layers,
             )
 
-            # 3. Clean up old snapshots
-            retention = settings.get_int(["snapshot_retention"]) or 100
-            cleanup_old_snapshots(snapshot_dir, retention)
-
-            # 4. Check min_layer threshold
+            # 3. Check min_layer threshold
             min_layer = settings.get_int(["min_layer_for_vision"]) or 2
             if layer is not None and layer < min_layer:
                 _logger.info("Cycle %d: skipping vision (layer %s < %d)", cycle_num, layer, min_layer)
+                self._cleanup_snapshot(saved_path, settings)
                 self._send_state_update()
                 return
 
-            # 5. AI Vision analysis
+            # 4. AI Vision analysis
             try:
                 with open(saved_path, "rb") as f:
                     image_b64 = base64.b64encode(f.read()).decode("ascii")
@@ -242,12 +239,36 @@ class PrintMonitor:
                 self.state.errors.append(msg)
                 _logger.warning(msg)
 
+            # 5. Clean up snapshot after analysis
+            self._cleanup_snapshot(saved_path, settings)
+
         except Exception as e:
             msg = f"Cycle {cycle_num}: unexpected error: {e}"
             self.state.errors.append(msg)
             _logger.error(msg)
 
         self._send_state_update()
+
+    def _cleanup_snapshot(self, snapshot_path, settings):
+        """Delete snapshot after processing unless it's the last one kept for display."""
+        try:
+            from .snapshot import cleanup_old_snapshots
+            snapshot_dir = os.path.dirname(snapshot_path)
+
+            if settings.get_boolean(["delete_after_analysis"]):
+                # Keep only the very last snapshot for sidebar thumbnail display
+                # Delete the current one only if it's NOT the last snapshot path
+                if snapshot_path != self.state.last_snapshot_path:
+                    if os.path.exists(snapshot_path):
+                        os.remove(snapshot_path)
+                # Also clean up any older snapshots beyond retention=1
+                cleanup_old_snapshots(snapshot_dir, max_keep=1)
+            else:
+                # Standard retention-based cleanup
+                retention = settings.get_int(["snapshot_retention"]) or 20
+                cleanup_old_snapshots(snapshot_dir, retention)
+        except Exception as e:
+            _logger.debug("Snapshot cleanup: %s", e)
 
     def _handle_failure(self, reason):
         """Handle confirmed failure: emergency stop + notify."""

@@ -91,45 +91,49 @@ $(function () {
       return "$" + self.sessionCost().toFixed(4);
     });
 
-    // Provider visibility for settings
-    self.isProviderOpenAI = ko.computed(function () {
+    // Provider-aware placeholder text for settings fields
+    var endpointDefaults = {
+      openai: "https://api.openai.com/v1/chat/completions",
+      azure_openai: "https://your-resource.openai.azure.com",
+      anthropic: "https://api.anthropic.com/v1/messages",
+      xai: "https://api.x.ai/v1/chat/completions",
+      gemini: "https://generativelanguage.googleapis.com",
+      ollama: "http://localhost:11434",
+    };
+    var modelDefaults = {
+      openai: "gpt-4o-mini",
+      azure_openai: "gpt-4o-mini",
+      anthropic: "claude-sonnet-4-20250514",
+      xai: "grok-2-vision-latest",
+      gemini: "gemini-2.0-flash",
+      ollama: "llava",
+    };
+    var modelHelp = {
+      openai: "e.g. gpt-4o-mini, gpt-4o, gpt-4.1-mini",
+      azure_openai: "Model name (deployment name is set separately below)",
+      anthropic: "e.g. claude-sonnet-4-20250514, claude-haiku-4-5-20251001",
+      xai: "e.g. grok-2-vision-latest",
+      gemini: "e.g. gemini-2.0-flash, gemini-1.5-pro",
+      ollama: "e.g. llava, llava:13b, bakllava (must be pulled first)",
+    };
+
+    self._getProvider = function () {
       var s = self.settings.settings
         ? self.settings.settings.plugins.guardianeye
         : null;
-      return s && s.provider() === "openai";
+      return s ? s.provider() : "openai";
+    };
+
+    self.endpointPlaceholder = ko.computed(function () {
+      return endpointDefaults[self._getProvider()] || "";
     });
-    self.isProviderAzure = ko.computed(function () {
-      var s = self.settings.settings
-        ? self.settings.settings.plugins.guardianeye
-        : null;
-      return s && s.provider() === "azure_openai";
+
+    self.modelPlaceholder = ko.computed(function () {
+      return modelDefaults[self._getProvider()] || "";
     });
-    self.isProviderAnthropic = ko.computed(function () {
-      var s = self.settings.settings
-        ? self.settings.settings.plugins.guardianeye
-        : null;
-      return s && s.provider() === "anthropic";
-    });
-    self.isProviderXAI = ko.computed(function () {
-      var s = self.settings.settings
-        ? self.settings.settings.plugins.guardianeye
-        : null;
-      return s && s.provider() === "xai";
-    });
-    self.isProviderGemini = ko.computed(function () {
-      var s = self.settings.settings
-        ? self.settings.settings.plugins.guardianeye
-        : null;
-      return s && s.provider() === "gemini";
-    });
-    self.isProviderOllama = ko.computed(function () {
-      var s = self.settings.settings
-        ? self.settings.settings.plugins.guardianeye
-        : null;
-      return s && s.provider() === "ollama";
-    });
-    self.showApiKey = ko.computed(function () {
-      return !self.isProviderOllama();
+
+    self.modelHelpText = ko.computed(function () {
+      return modelHelp[self._getProvider()] || "";
     });
 
     // === Plugin message handler (real-time updates) ===

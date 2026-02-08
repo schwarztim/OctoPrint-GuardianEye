@@ -9,11 +9,11 @@ Supports 6 providers, all using only the `requests` library:
   - Google Gemini (gemini-2.0-flash)
   - Ollama (llava, fully local/free)
 
+All providers accept custom endpoints for self-hosted/proxy setups.
 Ported from bambu-lab-mcp/src/vision-provider.ts with 3 new providers added.
 """
 
 import time
-import base64
 import logging
 import requests
 
@@ -28,6 +28,16 @@ _TEST_IMAGE_B64 = (
     "/EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAA"
     "AAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwAB//2Q=="
 )
+
+# Default endpoints per provider
+DEFAULT_ENDPOINTS = {
+    "openai": "https://api.openai.com/v1/chat/completions",
+    "azure_openai": "",  # User must provide
+    "anthropic": "https://api.anthropic.com/v1/messages",
+    "xai": "https://api.x.ai/v1/chat/completions",
+    "gemini": "https://generativelanguage.googleapis.com",
+    "ollama": "http://localhost:11434",
+}
 
 
 class VisionAnalysisResult:
@@ -79,6 +89,7 @@ def _parse_verdict(reply):
 class VisionProviderBase:
     name = "base"
     model = ""
+    endpoint = ""
 
     def analyze(self, image_base64, prompt):
         raise NotImplementedError
@@ -95,14 +106,20 @@ class VisionProviderBase:
 class OpenAIVisionProvider(VisionProviderBase):
     name = "openai"
 
-    def __init__(self, api_key, model="gpt-4o-mini"):
+    def __init__(self, api_key, model="gpt-4o-mini", endpoint=""):
         self.api_key = api_key
         self.model = model
+        self.endpoint = (endpoint.strip().rstrip("/") if endpoint and endpoint.strip()
+                         else "https://api.openai.com/v1/chat/completions")
 
     def analyze(self, image_base64, prompt):
         start = time.time()
+        url = self.endpoint
+        # If user gave base URL without path, append the standard path
+        if not url.endswith("/chat/completions"):
+            url = url.rstrip("/") + "/v1/chat/completions"
         resp = requests.post(
-            "https://api.openai.com/v1/chat/completions",
+            url,
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {self.api_key}",
@@ -136,7 +153,7 @@ class AzureOpenAIVisionProvider(VisionProviderBase):
 
     def __init__(self, api_key, endpoint, deployment="gpt-4o-mini", api_version="2025-01-01-preview"):
         self.api_key = api_key
-        self.endpoint = endpoint.rstrip("/")
+        self.endpoint = endpoint.strip().rstrip("/") if endpoint else ""
         self.deployment = deployment
         self.model = deployment
         self.api_version = api_version
@@ -173,14 +190,19 @@ class AzureOpenAIVisionProvider(VisionProviderBase):
 class AnthropicVisionProvider(VisionProviderBase):
     name = "anthropic"
 
-    def __init__(self, api_key, model="claude-sonnet-4-20250514"):
+    def __init__(self, api_key, model="claude-sonnet-4-20250514", endpoint=""):
         self.api_key = api_key
         self.model = model
+        self.endpoint = (endpoint.strip().rstrip("/") if endpoint and endpoint.strip()
+                         else "https://api.anthropic.com/v1/messages")
 
     def analyze(self, image_base64, prompt):
         start = time.time()
+        url = self.endpoint
+        if not url.endswith("/messages"):
+            url = url.rstrip("/") + "/v1/messages"
         resp = requests.post(
-            "https://api.anthropic.com/v1/messages",
+            url,
             headers={
                 "Content-Type": "application/json",
                 "x-api-key": self.api_key,
@@ -221,14 +243,19 @@ class XAIVisionProvider(VisionProviderBase):
     """xAI / Grok — uses OpenAI-compatible API format."""
     name = "xai"
 
-    def __init__(self, api_key, model="grok-2-vision-latest"):
+    def __init__(self, api_key, model="grok-2-vision-latest", endpoint=""):
         self.api_key = api_key
         self.model = model
+        self.endpoint = (endpoint.strip().rstrip("/") if endpoint and endpoint.strip()
+                         else "https://api.x.ai/v1/chat/completions")
 
     def analyze(self, image_base64, prompt):
         start = time.time()
+        url = self.endpoint
+        if not url.endswith("/chat/completions"):
+            url = url.rstrip("/") + "/v1/chat/completions"
         resp = requests.post(
-            "https://api.x.ai/v1/chat/completions",
+            url,
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {self.api_key}",
@@ -261,13 +288,15 @@ class GeminiVisionProvider(VisionProviderBase):
     """Google Gemini — uses generativelanguage API with inline_data format."""
     name = "gemini"
 
-    def __init__(self, api_key, model="gemini-2.0-flash"):
+    def __init__(self, api_key, model="gemini-2.0-flash", endpoint=""):
         self.api_key = api_key
         self.model = model
+        self.endpoint = (endpoint.strip().rstrip("/") if endpoint and endpoint.strip()
+                         else "https://generativelanguage.googleapis.com")
 
     def analyze(self, image_base64, prompt):
         start = time.time()
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
+        url = f"{self.endpoint}/v1beta/models/{self.model}:generateContent"
         resp = requests.post(
             url,
             headers={"Content-Type": "application/json", "x-goog-api-key": self.api_key},
@@ -305,7 +334,7 @@ class OllamaVisionProvider(VisionProviderBase):
     name = "ollama"
 
     def __init__(self, endpoint="http://localhost:11434", model="llava"):
-        self.endpoint = endpoint.rstrip("/")
+        self.endpoint = endpoint.strip().rstrip("/") if endpoint else "http://localhost:11434"
         self.model = model
 
     def analyze(self, image_base64, prompt):
@@ -341,7 +370,6 @@ class OllamaVisionProvider(VisionProviderBase):
             resp = requests.get(f"{self.endpoint}/api/tags", timeout=10)
             resp.raise_for_status()
             models = [m.get("name", "") for m in resp.json().get("models", [])]
-            # Ollama model names may include :latest suffix
             found = any(self.model in m for m in models)
             if found:
                 return True, f"Ollama running, model '{self.model}' available"
@@ -356,31 +384,40 @@ def create_vision_provider(settings):
     """Factory: create a provider from OctoPrint plugin settings dict."""
     provider_name = settings.get("provider", "openai")
     api_key = settings.get("api_key", "")
+    endpoint = settings.get("endpoint", "")
 
     if provider_name == "openai":
-        return OpenAIVisionProvider(api_key, model=settings.get("openai_model", "gpt-4o-mini"))
+        return OpenAIVisionProvider(
+            api_key, model=settings.get("model", "gpt-4o-mini"), endpoint=endpoint,
+        )
 
     elif provider_name == "azure_openai":
         return AzureOpenAIVisionProvider(
             api_key=api_key,
-            endpoint=settings.get("azure_endpoint", ""),
+            endpoint=endpoint,
             deployment=settings.get("azure_deployment", "gpt-4o-mini"),
             api_version=settings.get("azure_api_version", "2025-01-01-preview"),
         )
 
     elif provider_name == "anthropic":
-        return AnthropicVisionProvider(api_key, model=settings.get("anthropic_model", "claude-sonnet-4-20250514"))
+        return AnthropicVisionProvider(
+            api_key, model=settings.get("model", "claude-sonnet-4-20250514"), endpoint=endpoint,
+        )
 
     elif provider_name == "xai":
-        return XAIVisionProvider(api_key, model=settings.get("xai_model", "grok-2-vision-latest"))
+        return XAIVisionProvider(
+            api_key, model=settings.get("model", "grok-2-vision-latest"), endpoint=endpoint,
+        )
 
     elif provider_name == "gemini":
-        return GeminiVisionProvider(api_key, model=settings.get("gemini_model", "gemini-2.0-flash"))
+        return GeminiVisionProvider(
+            api_key, model=settings.get("model", "gemini-2.0-flash"), endpoint=endpoint,
+        )
 
     elif provider_name == "ollama":
         return OllamaVisionProvider(
-            endpoint=settings.get("ollama_endpoint", "http://localhost:11434"),
-            model=settings.get("ollama_model", "llava"),
+            endpoint=endpoint or "http://localhost:11434",
+            model=settings.get("model", "llava"),
         )
 
     else:

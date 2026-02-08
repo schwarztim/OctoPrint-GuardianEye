@@ -63,18 +63,14 @@ class GuardianEyePlugin(
         return {
             "enabled": True,
             "auto_start": True,
-            # Provider
+            # Provider — unified endpoint/api_key/model for all providers
             "provider": "openai",
+            "endpoint": "",
             "api_key": "",
-            "openai_model": "gpt-4o-mini",
-            "azure_endpoint": "",
+            "model": "gpt-4o-mini",
+            # Azure-specific extras
             "azure_deployment": "gpt-4o-mini",
             "azure_api_version": "2025-01-01-preview",
-            "anthropic_model": "claude-sonnet-4-20250514",
-            "xai_model": "grok-2-vision-latest",
-            "gemini_model": "gemini-2.0-flash",
-            "ollama_endpoint": "http://localhost:11434",
-            "ollama_model": "llava",
             # Monitoring
             "interval_seconds": 60,
             "min_layer_for_vision": 2,
@@ -82,7 +78,8 @@ class GuardianEyePlugin(
             "layer_height": 0.2,
             # Snapshot
             "snapshot_url": "",
-            "snapshot_retention": 100,
+            "snapshot_retention": 20,
+            "delete_after_analysis": True,
             # Prompt
             "custom_prompt": "",
             # Notifications
@@ -271,16 +268,11 @@ class GuardianEyePlugin(
         if self._vision_provider is None or force_new:
             settings_data = {
                 "provider": self._settings.get(["provider"]),
+                "endpoint": self._settings.get(["endpoint"]),
                 "api_key": self._settings.get(["api_key"]),
-                "openai_model": self._settings.get(["openai_model"]),
-                "azure_endpoint": self._settings.get(["azure_endpoint"]),
+                "model": self._settings.get(["model"]),
                 "azure_deployment": self._settings.get(["azure_deployment"]),
                 "azure_api_version": self._settings.get(["azure_api_version"]),
-                "anthropic_model": self._settings.get(["anthropic_model"]),
-                "xai_model": self._settings.get(["xai_model"]),
-                "gemini_model": self._settings.get(["gemini_model"]),
-                "ollama_endpoint": self._settings.get(["ollama_endpoint"]),
-                "ollama_model": self._settings.get(["ollama_model"]),
             }
             self._vision_provider = create_vision_provider(settings_data)
         return self._vision_provider
